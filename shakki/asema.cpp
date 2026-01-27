@@ -27,12 +27,12 @@ Asema::Asema()
 		for (int j = 0; j < 8; j++)
 			_lauta[i][j] = nullptr;
 
-	// 2. Valkoiset upseerit (rivi 0) ja sotilaat (rivi 1)
+	// 2. Valkoiset upseerit ja sotilaat
 	_lauta[0][0] = vt; _lauta[0][1] = vr; _lauta[0][2] = vl; _lauta[0][3] = vd;
 	_lauta[0][4] = vk; _lauta[0][5] = vl; _lauta[0][6] = vr; _lauta[0][7] = vt;
 	for (int i = 0; i < 8; i++) _lauta[1][i] = vs;
 
-	// 3. Mustat upseerit (rivi 7) ja sotilaat (rivi 6)
+	// 3. Mustat upseerit ja sotilaat
 	_lauta[7][0] = mt; _lauta[7][1] = mr; _lauta[7][2] = ml; _lauta[7][3] = md;
 	_lauta[7][4] = mk; _lauta[7][5] = ml; _lauta[7][6] = mr; _lauta[7][7] = mt;
 	for (int i = 0; i < 8; i++) _lauta[6][i] = ms;
@@ -46,6 +46,24 @@ Asema::Asema()
 
 void Asema::paivitaAsema(Siirto *siirto)
 {
+
+		Ruutu alku = siirto->getAlkuruutu();
+		Ruutu loppu = siirto->getLoppuruutu();
+
+		int ar = alku.getRivi();
+		int as = alku.getSarake();
+		int lr = loppu.getRivi();
+		int ls = loppu.getSarake();
+
+		// nappula talteen
+		Nappula* siirrettava = _lauta[ar][as];
+
+		// nappula uuteen ruutuun
+		_lauta[lr][ls] = siirrettava;
+
+		// vanha ruutu tyhjäksi
+		_lauta[ar][as] = nullptr;
+
 
 	// Kaksoisaskel-lippu on oletusarvoisesti pois pддltд.
 	// Asetetaan myцhemmin, jos tarvii.

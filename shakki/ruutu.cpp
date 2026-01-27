@@ -1,20 +1,22 @@
 #include "ruutu.h"
 
 
-Ruutu::Ruutu(int sarake, int rivi)
+Ruutu::Ruutu(int rivi, int sarake)
 {
+	this->_rivi = rivi;
+	this->_sarake = sarake;
 }
 
 
 int Ruutu::getRivi()
 {
-	return 0;
+	return _rivi;
 }
 
 
 int Ruutu::getSarake()
 {
-	return 0;
+	return _sarake;
 }
 
 

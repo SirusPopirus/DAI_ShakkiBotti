@@ -25,10 +25,10 @@ void Kayttoliittyma::piirraLauta()
 
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
-    // Pakotetaan Unicode-tila
+    // Unicode-tila
     _setmode(_fileno(stdout), _O_U16TEXT);
 
-    // Ruutujen värit (TAUSTA + TEKSTI)
+    // Ruutujen värit
     WORD valkeaRuutu =
         BACKGROUND_GREEN | BACKGROUND_INTENSITY |
         FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
@@ -47,7 +47,7 @@ void Kayttoliittyma::piirraLauta()
 
         for (int j = 0; j < 8; j++) {
 
-            // Valitaan ruudun väri
+            // Ruudun väri
             SetConsoleTextAttribute(
                 hConsole,
                 ((i + j) % 2) ? tummaRuutu : valkeaRuutu
@@ -63,7 +63,7 @@ void Kayttoliittyma::piirraLauta()
             }
         }
 
-        // Palautetaan normaali väri rivin loppuun
+        // Normaali väri rivin loppuun
         SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
         wcout << L"  " << i + 1 << endl;
     }
@@ -82,9 +82,24 @@ void Kayttoliittyma::piirraLauta()
 */
 Siirto Kayttoliittyma::annaVastustajanSiirto()
 {
-	Siirto siirto;
-	return siirto;
-	
+    wstring syote;
+    wcout << L"Anna siirto: ";
+    getline(wcin, syote);
+
+    if (syote == L"O-O")
+        return Siirto(true, false);
+
+    if (syote == L"O-O-O")
+        return Siirto(false, true);
+
+    int alkuSarake = syote[1] - L'a';
+    int alkuRivi = syote[2] - L'1';
+
+    int loppuSarake = syote[4] - L'a';
+    int loppuRivi = syote[5] - L'1';
+
+    return Siirto(Ruutu(alkuRivi, alkuSarake),
+        Ruutu(loppuRivi, loppuSarake));
 }
 
 

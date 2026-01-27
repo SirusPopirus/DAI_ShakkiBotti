@@ -19,10 +19,26 @@ int main()
 	Kayttoliittyma::getInstance()->aseta_asema(&asema);
 
 	// 3. Nyt piirtäminen onnistuu, koska _asema-osoitin on asetettu
-	Kayttoliittyma::getInstance()->piirraLauta();
 
-	// Estetään ikkunaa sulkeutumasta heti
+	while (true)
+	{
+		Kayttoliittyma::getInstance()->piirraLauta();
+
+		// Estetään ikkunaa sulkeutumasta heti
+		// system("pause");
+		wcout << L"(kirjoita exit lopettaaksesi)\n";
+		wstring syote;
+		getline(wcin, syote);
+
+		if (syote == L"exit") break;
+
+		Siirto s = Kayttoliittyma::getInstance()->annaVastustajanSiirto();
+
+		asema.paivitaAsema(&s);
+	}
+
 	system("pause");
+
 
 	return 0;
 }
