@@ -1,4 +1,4 @@
-#include "siirto.h"
+﻿#include "siirto.h"
 
 Siirto::Siirto(Ruutu alku, Ruutu loppu)
 {
@@ -31,7 +31,7 @@ bool Siirto::onkoLyhytLinna()
     return _lyhytLinna;
 }
 
-bool Siirto::onkoPitk�linna()
+bool Siirto::onkoPitkälinna()
 {
     return _pitkaLinna;
 }
