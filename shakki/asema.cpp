@@ -51,7 +51,7 @@ void Asema::paivitaAsema(Siirto* siirto)
 {
     kaksoisaskelSarakkeella = -1;
 
-    if (siirto->onkoLyhytLinna() || siirto->onkoPitkälinna()) {
+    if (siirto->onkoLyhytLinna() || siirto->onkoPitkalinna()) {
         if (_siirtovuoro == 0) {
             if (siirto->onkoLyhytLinna()) {
                 _lauta[0][6] = _lauta[0][4];
@@ -225,4 +225,15 @@ void Asema::huolehdiKuninkaanShakeista(std::list<Siirto>& lista, int vari)
 
 void Asema::annaLaillisetSiirrot(std::list<Siirto>& lista)
 {
+    lista.clear();
+
+    for (int r = 0; r < 8; r++) {
+        for (int s = 0; s < 8; s++) {
+            Nappula* n = _lauta[r][s];
+            if (n != nullptr && n->getVari() == _siirtovuoro) {
+                Ruutu ruutu(r, s);
+                n->annaSiirrot(lista, &ruutu, this, _siirtovuoro);
+            }
+        }
+    }
 }

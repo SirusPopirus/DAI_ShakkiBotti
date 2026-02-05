@@ -137,16 +137,26 @@ Siirto Kayttoliittyma::annaVastustajanSiirto()
         Ruutu loppu;
         bool ok = false;
 
+        if (left.size() == 2) {
+            if (parseSquare(left, alku) && parseSquare(right, loppu)) {
+                return Siirto(alku, loppu);
+            }
+            else {
+                cout << "virhesyöttö yritä uusiks\n";
+                continue;
+            }
+        }
+
         if (left.size() == 3) {
             char piece = static_cast<char>(toupper(static_cast<unsigned char>(left[0])));
-            if (piece == 'T' || piece == 'R' || piece == 'L' || piece == 'D' || piece == 'K' || piece == 'S') {
+            if (piece == 'T' || piece == 'R' || piece == 'L' || piece == 'D' || piece == 'K') {
                 string sq = left.substr(1);
                 if (parseSquare(sq, alku) && parseSquare(right, loppu)) {
                     ok = true;
                 }
             }
             else {
-                cout << "jouu nyt on outo näppäin " << left[0] << "sallitut on vaan: S, T, R, L, D, K.\n";
+                cout << "jouu nyt on outo näppäin " << left[0] << "sallitut on vaan: T, R, L, D, K.\n";
             }
         }
         else {
