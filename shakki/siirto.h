@@ -1,24 +1,24 @@
-#pragma once
+ï»¿#pragma once
 #include "ruutu.h"
 
-// Ns. "forward declaration". Nyt Asema-luokassa voidaa esitellä Nappula-osoittimia ilman,
-// että nappula.h -tiedostoa täytyy includoida.
-class Nappula; 
+// Ns. "forward declaration". Nyt Asema-luokassa voidaa esitellï¿½ Nappula-osoittimia ilman,
+// ettï¿½ nappula.h -tiedostoa tï¿½ytyy includoida.
+class Nappula;
 
 
 // Siirto kuvaa nappulan siirtymisen ruudusta toiseen, mukaanlukien erikoissiirrot
-// (linnoitus ja ohestalyönti).
+// (linnoitus ja ohestalyï¿½nti).
 class Siirto
 {
 public:
 	Siirto(Ruutu, Ruutu);
-	Siirto(){}
-	Siirto(bool, bool); // Linnoitus lyhesti (K-siipi) tai pitkästi (D-siipi?
+	Siirto() {}
+	Siirto(bool, bool); // Linnoitus lyhesti (K-siipi) tai pitkï¿½sti (D-siipi?
 	Ruutu getAlkuruutu();
 	Ruutu getLoppuruutu();
 	bool onkoLyhytLinna();
-	bool onkoPitkälinna();
-	Nappula* _miksikorotetaan = 0; 
+	bool onkoPitkalinna();
+	Nappula* _miksikorotetaan = 0;
 
 private:
 	Ruutu _alkuRuutu;

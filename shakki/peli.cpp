@@ -5,10 +5,10 @@ using namespace std;
 
 Peli::Peli(int ihmisenVari)
 {
-	
+
 }
 
 
-int Peli::getKoneenVari(){
+int Peli::getKoneenVari() {
 	return 0;
 }

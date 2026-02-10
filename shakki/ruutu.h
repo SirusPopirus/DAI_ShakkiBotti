@@ -1,8 +1,8 @@
-#pragma once
+ï»¿#pragma once
 
 
-// Shakkilaudan ruutu tietyssä (rivi, sarake) -koordinaatissa.
-class Ruutu{
+// Shakkilaudan ruutu tietyssï¿½ (rivi, sarake) -koordinaatissa.
+class Ruutu {
 public:
 	Ruutu(int, int);
 	Ruutu() {}

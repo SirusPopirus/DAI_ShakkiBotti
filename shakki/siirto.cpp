@@ -1,42 +1,37 @@
 #include "siirto.h"
 
-
-Siirto::Siirto(Ruutu _alkuRuutu, Ruutu _loppuRuutu)
+Siirto::Siirto(Ruutu alku, Ruutu loppu)
 {
-	this->_alkuRuutu = _alkuRuutu;
-	this->_loppuRuutu = _loppuRuutu;
-	this->_lyhytLinna = false;
-	this->_pitkaLinna = false;
+    _alkuRuutu = alku;
+    _loppuRuutu = loppu;
+    _lyhytLinna = false;
+    _pitkaLinna = false;
 }
 
-
-Siirto::Siirto(bool _lyhytLinna, bool _pitkaLinna) 
+Siirto::Siirto(bool lyhytLinna, bool pitkaLinna)
 {
-	this->_lyhytLinna = _lyhytLinna;
-	this->_pitkaLinna = _pitkaLinna;
-	
+    _lyhytLinna = lyhytLinna;
+    _pitkaLinna = pitkaLinna;
+    _alkuRuutu = Ruutu();
+    _loppuRuutu = Ruutu();
 }
-
 
 Ruutu Siirto::getAlkuruutu()
 {
-	return _alkuRuutu;
+    return _alkuRuutu;
 }
-
 
 Ruutu Siirto::getLoppuruutu()
 {
-	return _loppuRuutu;
+    return _loppuRuutu;
 }
 
-
-bool Siirto::onkoLyhytLinna() 
+bool Siirto::onkoLyhytLinna()
 {
-	return _lyhytLinna;
+    return _lyhytLinna;
 }
 
-
-bool Siirto::onkoPitkälinna() 
+bool Siirto::onkoPitkalinna()
 {
-	return _pitkaLinna;
+    return _pitkaLinna;
 }
