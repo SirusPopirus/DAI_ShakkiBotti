@@ -25,6 +25,7 @@ static string trim(const string& s) {
     size_t end = s.find_last_not_of(" \t\r\n");
     return s.substr(start, end - start + 1);
 }
+
 static bool parseSquare(const string& sq, Ruutu& ruutu)
 {
     if (sq.size() != 2) return false;
@@ -37,7 +38,6 @@ static bool parseSquare(const string& sq, Ruutu& ruutu)
     ruutu = Ruutu(rivi, sarake);
     return true;
 }
-
 
 void Kayttoliittyma::piirraLauta()
 {
@@ -74,12 +74,6 @@ void Kayttoliittyma::piirraLauta()
                 int vari = n->getVari();
                 WORD fg = (vari == 0) ? FG_VALKOINEN : FG_MUSTA;
 
-                bool isPawn = false;
-
-                if (isPawn && vari == 1) {
-                    fg = FG_MUSTA;
-                }
-
                 SetConsoleTextAttribute(hConsole, bg | fg);
 
                 std::wstring piece = n->getUnicode();
@@ -102,7 +96,6 @@ void Kayttoliittyma::piirraLauta()
     _setmode(_fileno(stdout), _O_TEXT);
 }
 
-
 Siirto Kayttoliittyma::annaVastustajanSiirto()
 {
     while (true) {
@@ -112,12 +105,13 @@ Siirto Kayttoliittyma::annaVastustajanSiirto()
 
         line = trim(line);
         if (line.empty()) {
-            cout << "tyhjä syöte koita uusiks";
+            cout << "tyhjä syöte, koita uusiks\n";
             continue;
         }
 
         string upper = line;
-        transform(upper.begin(), upper.end(), upper.begin(), [](unsigned char c) { return static_cast<char>(toupper(c)); });
+        transform(upper.begin(), upper.end(), upper.begin(),
+            [](unsigned char c) { return static_cast<char>(toupper(c)); });
         if (upper == "O-O") {
             return Siirto(true, false);
         }
@@ -127,7 +121,7 @@ Siirto Kayttoliittyma::annaVastustajanSiirto()
 
         size_t dash = line.find("-");
         if (dash == string::npos) {
-            cout << "Virhe ie ole hassua viivaa - : \n";
+            cout << "Virhe: ei ole viivaa -\n";
             continue;
         }
         string left = trim(line.substr(0, dash));
@@ -142,7 +136,7 @@ Siirto Kayttoliittyma::annaVastustajanSiirto()
                 return Siirto(alku, loppu);
             }
             else {
-                cout << "virhesyöttö yritä uusiks\n";
+                cout << "virhesyöttö, yritä uusiks\n";
                 continue;
             }
         }
@@ -156,19 +150,17 @@ Siirto Kayttoliittyma::annaVastustajanSiirto()
                 }
             }
             else {
-                cout << "jouu nyt on outo näppäin " << left[0] << "sallitut on vaan: T, R, L, D, K.\n";
+                cout << "outo nappula " << left[0] << " (sallitut: T, R, L, D, K)\n";
             }
         }
         else {
-            cout << "virhe pitää olla kirjain + ruutu: esim Rg1\n";
-
+            cout << "virhe: pitää olla kirjain + ruutu, esim Rg1\n";
         }
         if (!ok) {
-            cout << "siirto ei toimínu yritä uusiks\n";
+            cout << "siirto ei toiminut, yritä uusiks\n";
             continue;
         }
         return Siirto(alku, loppu);
-
     }
 }
 
@@ -180,16 +172,12 @@ int Kayttoliittyma::kysyVastustajanVari()
         getline(cin, line);
         line = trim(line);
         if (line.empty()) {
-            cout << "tyhjä syötä yritä uusiks \n";
+            cout << "tyhjä syöte, yritä uusiks\n";
             continue;
         }
         char c = static_cast<char>(tolower(static_cast<unsigned char>(line[0])));
-        if (c == 'v') {
-            return 0;
-        }
-        if (c == 'm') {
-            return 1;
-        }
+        if (c == 'v') return 0;
+        if (c == 'm') return 1;
         cout << "Anna 'v' tai 'm'\n";
     }
 }

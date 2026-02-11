@@ -5,6 +5,7 @@
 #include "siirto.h"
 
 class Nappula;
+class Ruutu;
 
 class Asema
 {
@@ -14,6 +15,7 @@ public:
     static Nappula* vk, * vd, * vt, * vl, * vr, * vs;
     static Nappula* mk, * md, * mt, * ml, * mr, * ms;
 
+    // -1 = ei voimassa, 0–7 = sarake jossa viimeisin kaksoisaskel
     int kaksoisaskelSarakkeella = -1;
 
     Asema();

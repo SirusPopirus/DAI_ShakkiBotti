@@ -15,7 +15,7 @@ public:
     static Kayttoliittyma* getInstance();
 
 private:
-    Asema* _asema;
+    Asema* _asema = nullptr;
     static Kayttoliittyma* instance;
 
     Kayttoliittyma() {}

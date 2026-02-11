@@ -1,14 +1,10 @@
 #include "peli.h"
 
-using namespace std;
-
-
 Peli::Peli(int ihmisenVari)
 {
-
+    _koneenVari = 1 - ihmisenVari;
 }
 
-
 int Peli::getKoneenVari() {
-	return 0;
+    return _koneenVari;
 }
