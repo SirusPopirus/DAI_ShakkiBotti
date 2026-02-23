@@ -190,8 +190,8 @@ void Sotilas::annaSiirrot(std::list<Siirto>& lista, Ruutu* ruutu, Asema* asema, 
 
 void Sotilas::lisaaSotilaanKorotukset(Siirto* siirto, std::list<Siirto>& lista, Asema* asema)
 {
-    int alkuRivi = siirto->getAlkuruutu().getRivi();
-    bool valkea = (alkuRivi == 6);
+    int loppuRivi = siirto->getLoppuruutu().getRivi();
+    bool valkea = (loppuRivi == 7);
 
     Siirto d = *siirto;
     d._miksikorotetaan = (valkea ? Asema::vd : Asema::md);

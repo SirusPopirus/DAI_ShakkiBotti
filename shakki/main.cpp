@@ -35,7 +35,7 @@ int main()
         system("cls");
         ui->piirraLauta();
 
-        // 1) Generoidaan lailliset siirrot
+        //1) Generoidaan lailliset siirrot
         list<Siirto> lailliset;
         asema.annaLaillisetSiirrot(lailliset);
 
@@ -47,9 +47,11 @@ int main()
         while (!ok) {
             syote = ui->annaVastustajanSiirto();
 
-            // 2) Tarkistetaan löytyykö siirto listasta
+            //2) Tarkistetaan löytyykö siirto listasta
             for (auto& s : lailliset) {
                 if (siirrotSamat(s, syote)) {
+                    // Use the legal move (includes promotion choice) instead of plain input
+                    syote = s;
                     ok = true;
                     break;
                 }
@@ -60,7 +62,7 @@ int main()
             }
         }
 
-        // 3) Suoritetaan siirto
+        //3) Suoritetaan siirto
         asema.paivitaAsema(&syote);
     }
 
