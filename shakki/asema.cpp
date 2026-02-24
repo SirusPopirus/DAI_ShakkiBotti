@@ -3,6 +3,9 @@
 #include "minmaxpaluu.h"
 #include "nappula.h"
 #include "ruutu.h"
+#include <cmath>
+#include <vector>
+#include <algorithm>
 using namespace std;
 
 Nappula* Asema::vk = new Kuningas(L"\u2654",0, VK);
@@ -191,30 +194,272 @@ bool Asema::getOnkoValkeaKTliikkunut() { return _onkoValkeaKTliikkunut; }
 bool Asema::getOnkoMustaDTliikkunut() { return _onkoMustaDTliikkunut; }
 bool Asema::getOnkoMustaKTliikkunut() { return _onkoMustaKTliikkunut; }
 
-double Asema::evaluoi() { return 0; }
-double Asema::laskeNappuloidenArvo(int) { return 0; }
-bool Asema::onkoAvausTaiKeskipeli(int) { return false; }
-double Asema::nappuloitaKeskella(int) { return 0; }
-double Asema::linjat(int) { return 0; }
+// --- Evaluointifunktio ja apufunktiot ---
+
+double Asema::laskeNappuloidenArvo(int /*unused*/)
+{
+ // Returns white minus black in pawn units
+ double val =0.0;
+ for (int r =0; r <8; r++) {
+ for (int s =0; s <8; s++) {
+ Nappula* n = _lauta[r][s];
+ if (!n) continue;
+ double v =0.0;
+ int k = n->getKoodi();
+ if (k == VD || k == MD) v =9.0;
+ else if (k == VT || k == MT) v =5.0;
+ else if (k == VL || k == ML) v =3.25;
+ else if (k == VR || k == MR) v =3.0;
+ else if (k == VS || k == MS) v =1.0;
+
+ if (n->getVari() ==0) val += v; else val -= v;
+ }
+ }
+ return val;
+}
+
+bool Asema::onkoAvausTaiKeskipeli(int /*unused*/)
+{
+ // Simple phase detection: count non-pawn material (absolute value)
+ double nonPawn =0.0;
+ for (int r =0; r <8; r++) {
+ for (int s =0; s <8; s++) {
+ Nappula* n = _lauta[r][s];
+ if (!n) continue;
+ int k = n->getKoodi();
+ if (k == VS || k == MS) continue;
+ if (k == VD || k == MD) nonPawn +=9.0;
+ else if (k == VT || k == MT) nonPawn +=5.0;
+ else if (k == VL || k == ML) nonPawn +=3.25;
+ else if (k == VR || k == MR) nonPawn +=3.0;
+ }
+ }
+ // If there is a lot of material on board -> opening/midgame
+ return nonPawn >10.0; // threshold chosen heuristically
+}
+
+double Asema::nappuloitaKeskella(int vari)
+{
+ // Reward pieces on central4x4 squares (ranks/files2..5)
+ double cnt =0.0;
+ for (int r =2; r <=5; r++) {
+ for (int s =2; s <=5; s++) {
+ Nappula* n = _lauta[r][s];
+ if (!n) continue;
+ if (n->getVari() == vari) {
+ int k = n->getKoodi();
+ // heavier pieces matter more in center
+ double weight =0.5;
+ if (k == VD || k == MD) weight =1.0;
+ else if (k == VT || k == MT) weight =0.8;
+ else if (k == VL || k == ML || k == VR || k == MR) weight =0.7;
+ else if (k == VS || k == MS) weight =0.4;
+ cnt += weight;
+ }
+ }
+ }
+ return cnt;
+}
+
+double Asema::linjat(int vari)
+{
+ // Bonus for rooks/queens on open files/ranks and bishops on open diagonals
+ double bonus =0.0;
+ for (int r =0; r <8; r++) {
+ for (int s =0; s <8; s++) {
+ Nappula* n = _lauta[r][s];
+ if (!n) continue;
+ if (n->getVari() != vari) continue;
+ int k = n->getKoodi();
+ if (k == VT || k == MT || k == VD || k == MD) {
+ // check rank open
+ bool rankOpen = true;
+ for (int ss =0; ss <8; ss++) {
+ if (ss == s) continue;
+ if (_lauta[r][ss] != nullptr && _lauta[r][ss]->getKoodi() == VS) { rankOpen = false; break; }
+ if (_lauta[r][ss] != nullptr && _lauta[r][ss]->getKoodi() == MS) { rankOpen = false; break; }
+ }
+ bool fileOpen = true;
+ for (int rr =0; rr <8; rr++) {
+ if (rr == r) continue;
+ if (_lauta[rr][s] != nullptr && _lauta[rr][s]->getKoodi() == VS) { fileOpen = false; break; }
+ if (_lauta[rr][s] != nullptr && _lauta[rr][s]->getKoodi() == MS) { fileOpen = false; break; }
+ }
+ if (rankOpen) bonus +=0.6;
+ if (fileOpen) bonus +=0.8;
+ }
+ if (k == VL || k == ML) {
+ // check diagonals for pawns blocking
+ int d1r = r+1, d1s = s+1; bool d1open = true;
+ while (d1r <8 && d1s <8) { if (_lauta[d1r][d1s] != nullptr && (_lauta[d1r][d1s]->getKoodi() == VS || _lauta[d1r][d1s]->getKoodi() == MS)) { d1open = false; break; } d1r++; d1s++; }
+ int d2r = r+1, d2s = s-1; bool d2open = true;
+ while (d2r <8 && d2s >=0) { if (_lauta[d2r][d2s] != nullptr && (_lauta[d2r][d2s]->getKoodi() == VS || _lauta[d2r][d2s]->getKoodi() == MS)) { d2open = false; break; } d2r++; d2s--; }
+ int d3r = r-1, d3s = s+1; bool d3open = true;
+ while (d3r >=0 && d3s <8) { if (_lauta[d3r][d3s] != nullptr && (_lauta[d3r][d3s]->getKoodi() == VS || _lauta[d3r][d3s]->getKoodi() == MS)) { d3open = false; break; } d3r--; d3s++; }
+ int d4r = r-1, d4s = s-1; bool d4open = true;
+ while (d4r >=0 && d4s >=0) { if (_lauta[d4r][d4s] != nullptr && (_lauta[d4r][d4s]->getKoodi() == VS || _lauta[d4r][d4s]->getKoodi() == MS)) { d4open = false; break; } d4r--; d4s--; }
+ if (d1open || d2open || d3open || d4open) bonus +=0.5;
+ }
+ }
+ }
+ return bonus;
+}
+
+
+double Asema::evaluoi()
+{
+ // Base material (white positive)
+ double material = laskeNappuloidenArvo(0);
+
+ // Center control
+ double centerWhite = nappuloitaKeskella(0);
+ double centerBlack = nappuloitaKeskella(1);
+ double centerAdv = centerWhite - centerBlack;
+
+ // Open lines and diagonals
+ double linesWhite = linjat(0);
+ double linesBlack = linjat(1);
+ double linesAdv = linesWhite - linesBlack;
+
+ // King safety: small bonus if king hasn't moved (castle potential)
+ double kingSafety =0.0;
+ if (!_onkoValkeaKuningasLiikkunut) kingSafety +=0.3;
+ if (!_onkoMustaKuningasLiikkunut) kingSafety -=0.3;
+
+ // Combine: material primary, others are small modifiers
+ double score = material
+ +0.12 * centerAdv
+ +0.08 * linesAdv
+ + kingSafety;
+
+ return score;
+}
+
 
 MinMaxPaluu Asema::minimax(int syvyys)
 {
- MinMaxPaluu p{};
- p._evaluointiArvo =0;
- return p;
+ // choose depending on side to move
+ if (_siirtovuoro ==0) return maxi(syvyys);
+ return mini(syvyys);
 }
+
 MinMaxPaluu Asema::maxi(int syvyys)
 {
- MinMaxPaluu p{};
- p._evaluointiArvo =0;
- return p;
+ MinMaxPaluu best;
+ if (syvyys <=0) {
+ best._evaluointiArvo = evaluoi();
+ return best;
+ }
+
+ list<Siirto> moves;
+ annaLaillisetSiirrot(moves);
+ if (moves.empty()) {
+ // checkmate or stalemate for white to move
+ // find white king
+ Ruutu kunRuutu;
+ for (int r =0; r <8; ++r) for (int s =0; s <8; ++s) if (_lauta[r][s] == vk) kunRuutu = Ruutu(r, s);
+ int vast =1 - _siirtovuoro;
+ bool uhattu = onkoRuutuUhattu(&kunRuutu, vast);
+ if (uhattu) best._evaluointiArvo = -10000.0; else best._evaluointiArvo =0.0;
+ return best;
+ }
+
+ double bestVal = -1e9;
+ Siirto bestMove;
+
+ // save state
+ Nappula* saved[8][8];
+ for (int r =0; r <8; ++r) for (int s =0; s <8; ++s) saved[r][s] = _lauta[r][s];
+ int savedSiirtovuoro = _siirtovuoro;
+ int savedKaksois = kaksoisaskelSarakkeella;
+ bool sv_vk = _onkoValkeaKuningasLiikkunut;
+ bool sv_mk = _onkoMustaKuningasLiikkunut;
+ bool sv_vdt = _onkoValkeaDTliikkunut;
+ bool sv_vkt = _onkoValkeaKTliikkunut;
+ bool sv_mdt = _onkoMustaDTliikkunut;
+ bool sv_mkt = _onkoMustaKTliikkunut;
+
+ for (auto &m : moves) {
+ // apply move
+ paivitaAsema(&m);
+ // recurse
+ MinMaxPaluu reply = mini(syvyys -1);
+ double val = reply._evaluointiArvo;
+ if (val > bestVal) { bestVal = val; bestMove = m; }
+ // restore state (note: this does not delete newly allocated promotion pieces)
+ for (int r =0; r <8; ++r) for (int s =0; s <8; ++s) _lauta[r][s] = saved[r][s];
+ _siirtovuoro = savedSiirtovuoro;
+ kaksoisaskelSarakkeella = savedKaksois;
+ _onkoValkeaKuningasLiikkunut = sv_vk;
+ _onkoMustaKuningasLiikkunut = sv_mk;
+ _onkoValkeaDTliikkunut = sv_vdt;
+ _onkoValkeaKTliikkunut = sv_vkt;
+ _onkoMustaDTliikkunut = sv_mdt;
+ _onkoMustaKTliikkunut = sv_mkt;
+ }
+
+ best._evaluointiArvo = bestVal;
+ best._parasSiirto = bestMove;
+ return best;
 }
+
 MinMaxPaluu Asema::mini(int syvyys)
 {
- MinMaxPaluu p{};
- p._evaluointiArvo =0;
- return p;
+ MinMaxPaluu best;
+ if (syvyys <=0) {
+ best._evaluointiArvo = evaluoi();
+ return best;
+ }
+
+ list<Siirto> moves;
+ annaLaillisetSiirrot(moves);
+ if (moves.empty()) {
+ // checkmate or stalemate for black to move
+ Ruutu kunRuutu;
+ for (int r =0; r <8; ++r) for (int s =0; s <8; ++s) if (_lauta[r][s] == mk) kunRuutu = Ruutu(r, s);
+ int vast =1 - _siirtovuoro;
+ bool uhattu = onkoRuutuUhattu(&kunRuutu, vast);
+ if (uhattu) best._evaluointiArvo =10000.0; else best._evaluointiArvo =0.0;
+ return best;
+ }
+
+ double bestVal =1e9;
+ Siirto bestMove;
+
+ // save state
+ Nappula* saved[8][8];
+ for (int r =0; r <8; ++r) for (int s =0; s <8; ++s) saved[r][s] = _lauta[r][s];
+ int savedSiirtovuoro = _siirtovuoro;
+ int savedKaksois = kaksoisaskelSarakkeella;
+ bool sv_vk = _onkoValkeaKuningasLiikkunut;
+ bool sv_mk = _onkoMustaKuningasLiikkunut;
+ bool sv_vdt = _onkoValkeaDTliikkunut;
+ bool sv_vkt = _onkoValkeaKTliikkunut;
+ bool sv_mdt = _onkoMustaDTliikkunut;
+ bool sv_mkt = _onkoMustaKTliikkunut;
+
+ for (auto &m : moves) {
+ paivitaAsema(&m);
+ MinMaxPaluu reply = maxi(syvyys -1);
+ double val = reply._evaluointiArvo;
+ if (val < bestVal) { bestVal = val; bestMove = m; }
+ // restore
+ for (int r =0; r <8; ++r) for (int s =0; s <8; ++s) _lauta[r][s] = saved[r][s];
+ _siirtovuoro = savedSiirtovuoro;
+ kaksoisaskelSarakkeella = savedKaksois;
+ _onkoValkeaKuningasLiikkunut = sv_vk;
+ _onkoMustaKuningasLiikkunut = sv_mk;
+ _onkoValkeaDTliikkunut = sv_vdt;
+ _onkoValkeaKTliikkunut = sv_vkt;
+ _onkoMustaDTliikkunut = sv_mdt;
+ _onkoMustaKTliikkunut = sv_mkt;
+ }
+
+ best._evaluointiArvo = bestVal;
+ best._parasSiirto = bestMove;
+ return best;
 }
+
 
 void Asema::annaLinnoitusSiirrot(std::list<Siirto>& lista, int vari)
 {
@@ -286,7 +531,7 @@ void Asema::annaLaillisetSiirrot(std::list<Siirto>& lista)
 
  int vastustaja =1 - _siirtovuoro;
 
- //4) suodatus: poistetaan siirrot, jotka jättävät kuninkaan shakkiin
+ //4) suodatus: poistetaan siirrot, jotka jättävät kuningaan shakkiin
  for (auto it = lista.begin(); it != lista.end(); ) {
 
  if (it->onkoLyhytLinna() || it->onkoPitkalinna()) {
